@@ -71,18 +71,18 @@ COUNTRY_OPTS = [
 
 # Color palette (Dark Navy + Teal theme)
 COLORS = {
-    'bg': '#070B14',
-    'surface': '#0F172A',
-    'card': '#141D2E',
-    'border': '#1F2A40',
-    'accent': '#18E3C8',
-    'accent_light': '#2DD4BF',
-    'green': '#4ADE80',
-    'red': '#F87171',
-    'purple': '#A78BFA',
-    'orange': '#FB923C',
-    'text': '#F2F5FA',
-    'text_secondary': '#94A3B8',
+    'bg': '#062C22',          
+    'surface': '#0A3D31',     
+    'card': '#114D40',     
+    'border': '#D4AF37', 
+    'accent': '#F1C40F',      
+    'accent_light': '#FDE68A',
+    'green': '#2ECC71',
+    'red': '#E74C3C',
+    'purple': '#9B59B6',
+    'orange': '#E67E22',
+    'text': '#ECF0F1',        # أبيض مائل للرمادي
+    'text_secondary': '#BDC3C7',
     'white': '#FFFFFF'
 }
 
@@ -314,7 +314,7 @@ class SimpleGradientBoosting:
 # =============================================================================
 
 def generate_synthetic_data(n_samples: int = 32561) -> Tuple[np.ndarray, np.ndarray]:
-    """Generate synthetic census-like data."""
+    """Generate synthetic census-like data with 9 features."""
     np.random.seed(42)
     random.seed(42)
     
@@ -322,26 +322,32 @@ def generate_synthetic_data(n_samples: int = 32561) -> Tuple[np.ndarray, np.ndar
     labels = []
     
     for _ in range(n_samples):
+        # 1. الميزات الرقمية (القديمة)
         age = random.randint(17, 90)
         education_num = random.randint(1, 16)
         capital_gain = 0 if random.random() < 0.9 else random.randint(1000, 99999)
         capital_loss = 0 if random.random() < 0.95 else random.randint(100, 4356)
         hours_per_week = random.randint(20, 80)
         
-        features.append([age, education_num, capital_gain, capital_loss, hours_per_week])
+        # 2. الميزات الجديدة (قيم عشوائية بين 0 و 1 لتمثيل الاختيارات)
+        workclass_val = random.random()
+        edu_level_val = random.random()
+        marital_val = random.random()
+        sex_val = random.choice([0, 1])  # 0 للذكور، 1 للإناث
         
-        # Determine label based on realistic patterns
+        # إضافة الـ 9 ميزات بالترتيب الصحيح
+        features.append([
+            age, education_num, capital_gain, capital_loss, hours_per_week,
+            workclass_val, edu_level_val, marital_val, sex_val
+        ])
+        
+        # تحديد النتيجة (Label) بناءً على نمط منطقي
         score = 0
-        if education_num >= 13:
-            score += 2
-        if education_num >= 9:
-            score += 1
-        if 30 <= age <= 60:
-            score += 1
-        if capital_gain > 5000:
-            score += 3
-        if hours_per_week >= 40:
-            score += 1
+        if education_num >= 13: score += 2
+        if 30 <= age <= 60: score += 1
+        if capital_gain > 5000: score += 3
+        if hours_per_week >= 40: score += 1
+        if sex_val == 1: score += 0.5  # إضافة وزن بسيط للجنس كمثال
         
         is_rich = score >= 4 or random.random() < 0.24
         labels.append(1 if is_rich else 0)
@@ -1170,13 +1176,23 @@ class CharityMLApp:
             return
         
         # Create feature vector
-        feature_vec = np.array([[
-            self.features['age'],
-            self.features['education-num'],
-            self.features['capital-gain'],
-            self.features['capital-loss'],
-            self.features['hours-per-week']
-        ]], dtype=float)
+       workclass_val = WORKCLASS_OPTS.index(self.features['workclass']) / len(WORKCLASS_OPTS)
+       edu_level_val = EDUCATION_OPTS.index(self.features['education_level']) / len(EDUCATION_OPTS)
+       marital_val = MARITAL_OPTS.index(self.features['marital-status']) / len(MARITAL_OPTS)
+       sex_val = 1 if self.features['sex'] == 'Female' else 0
+
+        # إنشاء متجه ميزات موسع (أضفنا 4 ميزات جديدة)
+       feature_vec = np.array([[
+       self.features['age'],
+       self.features['education-num'],
+       self.features['capital-gain'],
+       self.features['capital-loss'],
+       self.features['hours-per-week'],
+       workclass_val,   # ميزة مضافة
+       edu_level_val,   # ميزة مضافة
+       marital_val,     # ميزة مضافة
+       sex_val          # ميزة مضافة
+            ]], dtype=float)
         
         # Preprocess
         feature_vec[:, 2] = np.log1p(feature_vec[:, 2])  # capital-gain
