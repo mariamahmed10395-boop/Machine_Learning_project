@@ -330,15 +330,18 @@ def generate_synthetic_data(n_samples: int = 32561) -> Tuple[np.ndarray, np.ndar
         hours_per_week = random.randint(20, 80)
         
         # 2. الميزات الجديدة (قيم عشوائية بين 0 و 1 لتمثيل الاختيارات)
-        workclass_val = random.random()
-        edu_level_val = random.random()
-        marital_val = random.random()
-        sex_val = random.choice([0, 1])  # 0 للذكور، 1 للإناث
+        work_idx = random.randint(0, len(WORKCLASS_OPTS) - 1)
+        edu_idx = min(education_num - 1, len(EDUCATION_OPTS) - 1)
+        mar_idx = random.randint(0, len(MARITAL_OPTS) - 1)
+        occ_idx = random.randint(0, len(OCCUPATION_OPTS) - 1)
+        rel_idx = random.randint(0, len(RELATIONSHIP_OPTS) - 1)
+        race_idx = random.randint(0, len(RACE_OPTS) - 1)
+        sex_idx = random.randint(0, len(SEX_OPTS) - 1)
+        nat_idx = random.randint(0, len(COUNTRY_OPTS) - 1)
         
-        # إضافة الـ 9 ميزات بالترتيب الصحيح
         features.append([
             age, education_num, capital_gain, capital_loss, hours_per_week,
-            workclass_val, edu_level_val, marital_val, sex_val
+            work_idx, edu_idx, mar_idx, occ_idx, rel_idx, race_idx, sex_idx, nat_idx
         ])
         
         # تحديد النتيجة (Label) بناءً على نمط منطقي
@@ -1015,14 +1018,19 @@ class CharityMLApp:
         
         self.scaler_params = scaler_params
         
-        # Split data
+        # خلط البيانات عشوائياً (Shuffle Data)
+        indices = np.random.permutation(len(y))
+        X_shuffled = X_processed[indices]
+        y_shuffled = y[indices]
+        
+        # تقسيم البيانات بعد الخليط
         test_size = int(self.model_config['test_size'].get() * len(y))
         split_idx = len(y) - test_size
         
-        self.X_train = X_processed[:split_idx]
-        self.X_test = X_processed[split_idx:]
-        self.y_train = y[:split_idx]
-        self.y_test = y[split_idx:]
+        self.X_train = X_shuffled[:split_idx]
+        self.X_test = X_shuffled[split_idx:]
+        self.y_train = y_shuffled[:split_idx]
+        self.y_test = y_shuffled[split_idx:]
         
         # Update dataset info
         n_total = len(y)
@@ -1176,23 +1184,28 @@ class CharityMLApp:
             return
         
         # Create feature vector
-       workclass_val = WORKCLASS_OPTS.index(self.features['workclass']) / len(WORKCLASS_OPTS)
-       edu_level_val = EDUCATION_OPTS.index(self.features['education_level']) / len(EDUCATION_OPTS)
-       marital_val = MARITAL_OPTS.index(self.features['marital-status']) / len(MARITAL_OPTS)
-       sex_val = 1 if self.features['sex'] == 'Female' else 0
+        workclass_val = WORKCLASS_OPTS.index(self.features['workclass']) / len(WORKCLASS_OPTS)
+        edu_level_val = EDUCATION_OPTS.index(self.features['education_level']) / len(EDUCATION_OPTS)
+        marital_val = MARITAL_OPTS.index(self.features['marital-status']) / len(MARITAL_OPTS)
+        sex_val = 1 if self.features['sex'] == 'Female' else 0
 
         # إنشاء متجه ميزات موسع (أضفنا 4 ميزات جديدة)
-       feature_vec = np.array([[
-       self.features['age'],
-       self.features['education-num'],
-       self.features['capital-gain'],
-       self.features['capital-loss'],
-       self.features['hours-per-week'],
-       workclass_val,   # ميزة مضافة
-       edu_level_val,   # ميزة مضافة
-       marital_val,     # ميزة مضافة
-       sex_val          # ميزة مضافة
-            ]], dtype=float)
+        feature_vec = np.array([[
+            self.features['age'],
+            self.features['education-num'],
+            self.features['capital-gain'],
+            self.features['capital-loss'],
+            self.features['hours-per-week'],
+            # استخراج المؤشر الرقمي لكل اختيار فئوي من الواجهة (Label Encoding)
+            WORKCLASS_OPTS.index(self.features['workclass']),
+            EDUCATION_OPTS.index(self.features['education_level']),
+            MARITAL_OPTS.index(self.features['marital-status']),
+            OCCUPATION_OPTS.index(self.features['occupation']),
+            RELATIONSHIP_OPTS.index(self.features['relationship']),
+            RACE_OPTS.index(self.features['race']),
+            SEX_OPTS.index(self.features['sex']),
+            COUNTRY_OPTS.index(self.features['native-country'])
+        ]], dtype=float)
         
         # Preprocess
         feature_vec[:, 2] = np.log1p(feature_vec[:, 2])  # capital-gain
@@ -1298,14 +1311,17 @@ class CharityMLApp:
         self.ax.tick_params(colors=COLORS['text_secondary'], labelsize=8)
         
         # Get feature importances or coefficients
-        feature_names = ['Age', 'Edu-Num', 'Cap-Gain', 'Cap-Loss', 'Hours']
+        feature_names = [
+            'Age', 'Edu-Num', 'Cap-Gain', 'Cap-Loss', 'Hours',
+            'Work', 'Edu', 'Marital', 'Occ', 'Rel', 'Race', 'Sex', 'Country'
+        ]
         
         if model_name == 'Logistic Regression':
             values = np.abs(model.coef_())
             title = "Feature Coefficients (|values|)"
             color = COLORS['purple']
         else:
-            values = model.feature_importances(5)
+            values = model.feature_importances(len(feature_names))
             title = "Feature Importances"
             color = COLORS['green'] if model_name == 'Random Forest' else COLORS['orange']
         
