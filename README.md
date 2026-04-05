@@ -75,13 +75,15 @@ Models were evaluated on accuracy, F-beta score, and training time. The best per
 
 ### GUI
 
-![GUI Screenshot](C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\images\GUI.PNG)
+![Description](C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\images\GUI.PNG)
 
 > **Note:** Replace the image path above with the actual path to your GUI screenshot. Place your screenshot in an `assets/` folder or update the path accordingly.
 
 ### Video Demo
 
-[![GUI Video Demo](C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\images\GUI.PNG)](C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\video\GUIDonor.mp4)
+## Demo
+
+![Demo](C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\video\GUIDonor.mp4)
 
 ## Enhancements Beyond the Base Project
 
