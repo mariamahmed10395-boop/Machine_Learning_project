@@ -348,8 +348,8 @@ class CharityMLApp:
                                   font=('IBM Plex Mono', 16, 'bold'))
         self.prob_value.pack(side=tk.RIGHT)
         
-        self.prog_bar = ttk.Progressbar(panel, orient='horizontal', mode='determinate', length=200)
-        self.prog_bar.pack(fill=tk.X, padx=15, pady=5)
+        self.prog_bar = ttk.Progressbar(panel, orient='horizontal', mode='determinate', length=400)
+        self.prog_bar.pack(fill=tk.X, padx=15, pady=10)
         
         # Predict button
         self._create_button(panel, "🔮  Predict Donor", self._predict,
@@ -929,20 +929,32 @@ class CharityMLApp:
             title = "Feature Importances"
             color = COLORS['green'] if model_name == 'Random Forest' else COLORS['orange']
         
-        # Sort by importance
-        sorted_idx = np.argsort(values)[::-1]
-        sorted_names = [feature_names[i] for i in sorted_idx]
-        sorted_values = values[sorted_idx]
+        # Sort by importance and keep top 5
+        sorted_idx = np.argsort(values)[::-1][:5]
         
-        bars = self.ax.barh(sorted_names, sorted_values, color=color, alpha=0.8)
+        # Reverse to show highest on top in horizontal bar chart
+        sorted_names = [feature_names[i] for i in sorted_idx][::-1]
+        sorted_values = values[sorted_idx][::-1]
+        
+        # Clear specific layouts
+        self.fig.subplots_adjust(left=0.25, right=0.85, top=0.8, bottom=0.2)
+
+        # Bar chart
+        bars = self.ax.barh(sorted_names, sorted_values, color=color, alpha=0.8, height=0.5)
+        
         self.ax.set_xlabel('Importance', color=COLORS['text_secondary'], fontsize=9)
-        self.ax.set_title(title, color=COLORS['text'], fontsize=10, pad=10)
+        self.ax.set_title(title + " (Top 5)", color=COLORS['text'], fontsize=11, pad=10)
+        
+        # Tick parameters
+        self.ax.tick_params(colors=COLORS['text_secondary'], labelsize=9)
         
         # Add value labels
+        max_val = np.max(sorted_values) if len(sorted_values) > 0 else 1.0
+        offset = max_val * 0.02
+        
         for bar, val in zip(bars, sorted_values):
-            self.ax.text(val + 0.01, bar.get_y() + bar.get_height()/2,
+            self.ax.text(val + offset, bar.get_y() + bar.get_height()/2,
                         f'{val:.3f}', va='center', ha='left',
                         color=COLORS['text_secondary'], fontsize=8)
         
-        self.fig.tight_layout()
         self.canvas.draw()
