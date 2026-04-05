@@ -19,7 +19,7 @@ This project requires Python 3.x and the following libraries:
 Install dependencies with:
 
 ```bash
-pip install numpy pandas matplotlib scikit-learn mlflow
+pip install numpy pandas matplotlib scikit-learn
 ```
 
 ## Project Structure
@@ -75,15 +75,17 @@ Models were evaluated on accuracy, F-beta score, and training time. The best per
 
 ### GUI
 
-![Description](C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\images\GUI.PNG)
-
-> **Note:** Replace the image path above with the actual path to your GUI screenshot. Place your screenshot in an `assets/` folder or update the path accordingly.
+<p align="center">
+  <img src="C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\images\GUI.PNG" width="900">
+</p>
 
 ### Video Demo
 
 ## Demo
 
-![Demo](C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\video\GUIDonor.mp4)
+<p align="center">
+  ▶️ <a href="C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\video\GUIDonor.mp4">Watch the GUI demo</a>
+</p>
 
 ## Enhancements Beyond the Base Project
 
