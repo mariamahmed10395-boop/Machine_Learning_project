@@ -71,22 +71,6 @@ Three supervised learning algorithms were trained and compared:
 
 Models were evaluated on accuracy, F-beta score, and training time. The best performing model was further optimized using GridSearchCV.
 
-## GUI Demo
-
-### GUI
-
-<p align="center">
-  <img src="P2\images\GUI.PNG" width="900">
-</p>
-
-### Video Demo
-
-## Demo
-
-<p align="center">
-  ▶️ <a href="P2\video\GUIDonor.mp4">Watch the GUI demo</a>
-</p>
-
 ## Enhancements Beyond the Base Project
 
 - Modular codebase split across dedicated files: `models.py`, `data_utils.py`, `constants.py`
@@ -109,6 +93,18 @@ Replace the placeholders above with your actual results from the notebook.
 - Dataset: UCI Machine Learning Repository
 - Original project template: Udacity Machine Learning Engineer Nanodegree
 
-```
+## GUI Demo
 
-```
+### GUI
+
+<p align="center">
+  <img src="P2\images\GUI.PNG" width="900">
+</p>
+
+### Video Demo
+
+## Demo
+
+<p align="center">
+  ▶️ <a href="P2\video\GUIDonor.mp4">Watch the GUI demo</a>
+</p>
