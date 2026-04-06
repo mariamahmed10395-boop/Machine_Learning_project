@@ -76,7 +76,7 @@ Models were evaluated on accuracy, F-beta score, and training time. The best per
 ### GUI
 
 <p align="center">
-  <img src="C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\images\GUI.PNG" width="900">
+  <img src="P2\images\GUI.PNG" width="900">
 </p>
 
 ### Video Demo
@@ -84,7 +84,7 @@ Models were evaluated on accuracy, F-beta score, and training time. The best per
 ## Demo
 
 <p align="center">
-  ▶️ <a href="C:\Users\Test\Desktop\project_2ML\Machine_Learning_project\P2\video\GUIDonor.mp4">Watch the GUI demo</a>
+  ▶️ <a href="P2\video\GUIDonor.mp4">Watch the GUI demo</a>
 </p>
 
 ## Enhancements Beyond the Base Project
