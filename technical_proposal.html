@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Proposal — CharityML Finding Donors Predictor</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0A3D31;
+            --accent: #D4AF37;
+            --accent-light: #F1C40F;
+            --bg: #FFFFFF;
+            --surface: #F8F9FA;
+            --text: #1a1a2e;
+            --text-secondary: #555770;
+            --border: #E0E0E0;
+            --green: #27AE60;
+            --red: #E74C3C;
+            --orange: #E67E22;
+            --purple: #8E44AD;
+            --blue: #2980B9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 20mm 18mm 20mm 18mm;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 11pt;
+            background: var(--bg);
+        }
+
+        /* ── Cover Page ── */
+        .cover-page {
+            page-break-after: always;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .cover-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), #114D40);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--accent);
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(10, 61, 49, 0.3);
+        }
+
+        .cover-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 36pt;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .cover-subtitle {
+            font-size: 18pt;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 40px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .cover-line {
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            border-radius: 2px;
+            margin: 0 auto 40px;
+        }
+
+        .cover-meta {
+            font-size: 11pt;
+            color: var(--text-secondary);
+            line-height: 2;
+        }
+
+        .cover-meta strong {
+            color: var(--text);
+        }
+
+        .cover-badge {
+            display: inline-block;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 24px;
+            margin-top: 30px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10pt;
+            color: var(--text-secondary);
+        }
+
+        /* ── Section Styles ── */
+        .content {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22pt;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--accent);
+            page-break-after: avoid;
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16pt;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 30px 0 14px 0;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13pt;
+            font-weight: 600;
+            color: var(--text);
+            margin: 20px 0 10px 0;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px 0;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+
+        thead {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        th {
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 10pt;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--surface);
+        }
+
+        tbody tr:hover {
+            background: #EAF2EF;
+        }
+
+        /* ── Code Blocks ── */
+        code {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9.5pt;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1px 5px;
+            color: var(--primary);
+        }
+
+        pre {
+            background: #1a1a2e;
+            color: #E0E0E0;
+            border-radius: 8px;
+            padding: 16px 20px;
+            overflow-x: auto;
+            margin: 12px 0 20px 0;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9pt;
+            line-height: 1.6;
+            page-break-inside: avoid;
+        }
+
+        pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #E0E0E0;
+        }
+
+        /* ── File Tree ── */
+        .file-tree {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 6px;
+            padding: 16px 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9.5pt;
+            line-height: 1.8;
+            margin: 12px 0 20px 0;
+            page-break-inside: avoid;
+        }
+
+        /* ── Alert Boxes ── */
+        .alert {
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 16px 0;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+
+        .alert-warning {
+            background: #FFF8E1;
+            border-left: 4px solid var(--orange);
+            color: #5D4037;
+        }
+
+        .alert-important {
+            background: #E8F5E9;
+            border-left: 4px solid var(--green);
+            color: #1B5E20;
+        }
+
+        .alert-note {
+            background: #E3F2FD;
+            border-left: 4px solid var(--blue);
+            color: #0D47A1;
+        }
+
+        .alert-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 10pt;
+        }
+
+        /* ── Diagram Boxes ── */
+        .diagram-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin: 20px 0;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .arch-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .arch-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .arch-node {
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 9pt;
+            font-weight: 600;
+            color: #fff;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .arch-node.entry {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .arch-node.gui {
+            background: var(--primary);
+        }
+
+        .arch-node.data {
+            background: var(--purple);
+        }
+
+        .arch-node.model {
+            background: var(--green);
+        }
+
+        .arch-node.vis {
+            background: var(--blue);
+        }
+
+        .arch-node.config {
+            background: var(--orange);
+        }
+
+        .arch-arrow {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Phase Cards ── */
+        .phase-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 16px 0;
+            page-break-inside: avoid;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .phase-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14pt;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .phase-1 .phase-number {
+            background: var(--red);
+        }
+
+        .phase-2 .phase-number {
+            background: var(--orange);
+        }
+
+        .phase-3 .phase-number {
+            background: var(--blue);
+        }
+
+        .phase-4 .phase-number {
+            background: var(--purple);
+        }
+
+        .phase-5 .phase-number {
+            background: var(--green);
+        }
+
+        .phase-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14pt;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .phase-est {
+            font-size: 9pt;
+            color: var(--text-secondary);
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2px 10px;
+            margin-left: auto;
+        }
+
+        .phase-body {
+            padding-left: 48px;
+        }
+
+        .phase-body ul {
+            padding-left: 18px;
+            margin: 8px 0;
+        }
+
+        .phase-body li {
+            margin-bottom: 6px;
+        }
+
+        .file-badge {
+            display: inline-block;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9pt;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1px 8px;
+            margin: 2px 0;
+        }
+
+        .file-badge.new {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .file-badge.modify {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        /* ── Priority Badges ── */
+        .priority {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+
+        .priority.high {
+            background: #FDEDEC;
+            color: var(--red);
+        }
+
+        .priority.medium {
+            background: #FFF8E1;
+            color: var(--orange);
+        }
+
+        .priority.low {
+            background: #E8F5E9;
+            color: var(--green);
+        }
+
+        /* ── TOC ── */
+        .toc {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px 30px;
+            margin: 20px 0 30px 0;
+            page-break-after: always;
+        }
+
+        .toc h2 {
+            margin-top: 0;
+            border: none;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc-list li {
+            padding: 6px 0;
+            border-bottom: 1px dotted var(--border);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .toc-list li:last-child {
+            border-bottom: none;
+        }
+
+        .toc-num {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--accent);
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        /* ── Utilities ── */
+        .page-break {
+            page-break-before: always;
+        }
+
+        .no-break {
+            page-break-inside: avoid;
+        }
+
+        .emoji {
+            font-size: 14pt;
+            margin-right: 6px;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--primary), #114D40);
+            color: #fff;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            page-break-inside: avoid;
+        }
+
+        .highlight-box strong {
+            color: var(--accent);
+        }
+
+        /* Print adjustments */
+        @media print {
+            body {
+                font-size: 10pt;
+            }
+
+            .cover-page {
+                min-height: 95vh;
+            }
+
+            h1 {
+                font-size: 20pt;
+            }
+
+            h2 {
+                font-size: 14pt;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        /* ── Footer ── */
+        .page-footer {
+            text-align: center;
+            font-size: 8pt;
+            color: var(--text-secondary);
+            margin-top: 40px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════ COVER PAGE ═══════════════════ -->
+    <div class="cover-page">
+        <div class="cover-logo">🎯</div>
+        <div class="cover-title">CharityML</div>
+        <div class="cover-subtitle">Finding Donors Predictor</div>
+        <div class="cover-line"></div>
+        <h2 style="font-size: 20pt; color: var(--text); margin: 0 0 30px 0; border: none;">Technical Proposal</h2>
+        <div class="cover-meta">
+            <strong>Project:</strong> Machine Learning — Supervised Learning (P2)<br>
+            <strong>Course:</strong> Digital Egypt Pioneers Initiative (DEPI)<br>
+            <strong>Date:</strong> April 6, 2026<br>
+            <strong>Repository:</strong> <code>Machine_Learning_project/P2/finding_donors/</code>
+        </div>
+        <div class="cover-badge">
+            Random Forest &nbsp;·&nbsp; Logistic Regression &nbsp;·&nbsp; Gradient Boosting
+        </div>
+    </div>
+
+    <!-- ═══════════════════ TABLE OF CONTENTS ═══════════════════ -->
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ul class="toc-list">
+            <li><span><span class="toc-num">1.</span> Executive Summary</span></li>
+            <li><span><span class="toc-num">2.</span> Current Architecture</span></li>
+            <li><span><span class="toc-num">3.</span> Technical Analysis & Identified Gaps</span></li>
+            <li><span><span class="toc-num">4.</span> Proposed Improvement Roadmap</span></li>
+            <li><span><span class="toc-num">5.</span> Risk Assessment</span></li>
+            <li><span><span class="toc-num">6.</span> Verification Plan</span></li>
+            <li><span><span class="toc-num">7.</span> Deliverables Summary</span></li>
+
+        </ul>
+    </div>
+
+    <!-- ═══════════════════ CONTENT ═══════════════════ -->
+    <div class="content">
+
+        <!-- ── Section 1 ── -->
+        <h1>1. Executive Summary</h1>
+
+        <p>
+            The <strong>CharityML Finding Donors Predictor</strong> is a supervised machine learning project that
+            predicts whether an individual earns more than $50,000 per year using U.S. Census data. The goal is to help
+            a fictitious charity organization — CharityML — identify the most likely donors and optimize outreach
+            efforts.
+        </p>
+
+        <p>
+            The system currently features a <strong>modular Python codebase</strong>, three <strong>custom-built
+                classifiers</strong> (Random Forest, Logistic Regression, Gradient Boosting), and a <strong>Tkinter
+                desktop GUI</strong> for interactive predictions. The project goes beyond the base Udacity template by
+            adding a desktop application with real-time feature adjustment and model comparison capabilities.
+        </p>
+
+        <div class="highlight-box">
+            <strong>This proposal</strong> outlines the current state of the project, identifies technical gaps and
+            areas for improvement, and presents a <strong>5-phase roadmap</strong> for elevating the project to
+            production quality — including real data integration, scikit-learn model upgrades, MLflow experiment
+            tracking, GUI modernization, and automated testing.
+        </div>
+
+        <!-- ── Section 2 ── -->
+        <h1>2. Current Architecture</h1>
+
+        <h2>2.1 Project Structure</h2>
+
+        <div class="file-tree">
+            finding_donors/<br>
+            ├── finding_donors_gui.py &nbsp;&nbsp;&nbsp; <em style="color:#888">← Entry point (launches Tkinter
+                GUI)</em><br>
+            ├── app_gui.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em
+                style="color:#888">← GUI application logic (961 lines)</em><br>
+            ├── models.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em
+                style="color:#888">← 3 custom ML classifiers (189 lines)</em><br>
+            ├── data_utils.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em style="color:#888">← Data
+                generation & preprocessing (106 lines)</em><br>
+            ├── constants.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em style="color:#888">←
+                Feature options, colors, defaults (88 lines)</em><br>
+            ├── visuals.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em
+                style="color:#888">← Matplotlib visualization helpers (146 lines)</em><br>
+            ├── finding_donors.ipynb &nbsp;&nbsp;&nbsp;&nbsp; <em style="color:#888">← Jupyter notebook
+                analysis</em><br>
+            ├── census.csv &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em
+                style="color:#888">← UCI Census dataset (~5.4 MB)</em><br>
+            ├── project_description.md &nbsp;&nbsp; <em style="color:#888">← Udacity project brief</em><br>
+            └── README.md
+        </div>
+
+        <h2>2.2 Architecture Diagram</h2>
+
+        <div class="diagram-box">
+            <div class="arch-diagram">
+                <div class="arch-row">
+                    <div class="arch-node entry">finding_donors_gui.py<br><small>Entry Point</small></div>
+                </div>
+                <div class="arch-arrow">▼</div>
+                <div class="arch-row">
+                    <div class="arch-node gui">app_gui.py<br><small>CharityMLApp Class (961 lines)</small></div>
+                </div>
+                <div class="arch-arrow">▼ imports ▼</div>
+                <div class="arch-row">
+                    <div class="arch-node config">constants.py<br><small>Options, Colors</small></div>
+                    <div class="arch-node data">data_utils.py<br><small>Data Generation</small></div>
+                    <div class="arch-node model">models.py<br><small>3 Classifiers</small></div>
+                    <div class="arch-node vis">matplotlib<br><small>Charts (TkAgg)</small></div>
+                </div>
+                <div style="margin-top: 12px;">
+                    <div class="arch-row">
+                        <div class="arch-node model" style="min-width: auto; padding: 6px 12px; font-size: 8pt;">
+                            SimpleRandomForest</div>
+                        <div class="arch-node model" style="min-width: auto; padding: 6px 12px; font-size: 8pt;">
+                            SimpleLogisticRegression</div>
+                        <div class="arch-node model" style="min-width: auto; padding: 6px 12px; font-size: 8pt;">
+                            SimpleGradientBoosting</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2>2.3 Current Capabilities</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Modular codebase</td>
+                    <td>✅ Done</td>
+                    <td>Split into 5 files from monolithic 1400-line script</td>
+                </tr>
+                <tr>
+                    <td>3 ML classifiers</td>
+                    <td>✅ Done</td>
+                    <td>Random Forest, Logistic Regression, Gradient Boosting</td>
+                </tr>
+                <tr>
+                    <td>Tkinter GUI</td>
+                    <td>✅ Done</td>
+                    <td>3-panel layout: Config → Features → Results</td>
+                </tr>
+                <tr>
+                    <td>13-feature input</td>
+                    <td>✅ Done</td>
+                    <td>5 numeric sliders + 8 categorical dropdowns</td>
+                </tr>
+                <tr>
+                    <td>Feature importance chart</td>
+                    <td>✅ Done</td>
+                    <td>Horizontal bar chart (top 5 features)</td>
+                </tr>
+                <tr>
+                    <td>Model comparison</td>
+                    <td>✅ Done</td>
+                    <td>Train & compare all 3 models side-by-side</td>
+                </tr>
+                <tr>
+                    <td>Synthetic data pipeline</td>
+                    <td>✅ Done</td>
+                    <td>Generates 32,561 samples with label logic</td>
+                </tr>
+                <tr>
+                    <td>Confusion matrix display</td>
+                    <td>✅ Done</td>
+                    <td>Displayed in metrics text panel</td>
+                </tr>
+                <tr>
+                    <td>Preset donor profiles</td>
+                    <td>✅ Done</td>
+                    <td>Reset / Random / Typical Donor presets</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ── Section 3 ── -->
+        <h1 class="page-break">3. Technical Analysis & Identified Gaps</h1>
+
+        <h2>3.1 Data Pipeline</h2>
+
+        <div class="alert alert-warning">
+            <div class="alert-title">⚠️ Warning: GUI uses synthetic data only</div>
+            The GUI currently generates random synthetic data instead of loading the real <code>census.csv</code>
+            dataset. The "Browse" button exists but ultimately calls the same synthetic data generator regardless of
+            file selection.
+        </div>
+
+        <p>
+            The <code>data_utils.py</code> module generates random data with a hardcoded label-scoring heuristic, rather
+            than loading the real UCI Census dataset. The actual <code>census.csv</code> file (5.4 MB, ~32,561 records)
+            is present in the directory but is never read by the GUI application.
+        </p>
+
+        <h2>3.2 Machine Learning Models</h2>
+
+        <div class="alert alert-important">
+            <div class="alert-title">ℹ️ Important: All classifiers are simplified custom implementations</div>
+            None of the three models use scikit-learn. They are hand-coded approximations with significant limitations.
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Implementation</th>
+                    <th>Limitation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>SimpleRandomForest</strong></td>
+                    <td>Bagged decision stumps (single-feature, single-split)</td>
+                    <td>Not real decision trees; each tree uses only 1 random feature and 1 split threshold</td>
+                </tr>
+                <tr>
+                    <td><strong>SimpleLogisticRegression</strong></td>
+                    <td>Vanilla gradient descent</td>
+                    <td>No regularization (L1/L2), no convergence checking, fixed learning schedule</td>
+                </tr>
+                <tr>
+                    <td><strong>SimpleGradientBoosting</strong></td>
+                    <td>Sequential single-stump boosting</td>
+                    <td>Same single-feature/single-split limitation; O(n) residual update loop per tree</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong>Reported accuracy (from README):</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Accuracy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Logistic Regression</td>
+                    <td>71.87%</td>
+                </tr>
+                <tr>
+                    <td>Random Forest</td>
+                    <td>64.40%</td>
+                </tr>
+                <tr>
+                    <td>Gradient Boosting</td>
+                    <td>72.01%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>3.3 MLflow Integration</h2>
+
+        <div class="alert alert-note">
+            <div class="alert-title">📝 Note: MLflow is mentioned but not implemented</div>
+            The README states "Integrated MLflow for experiment tracking, metric logging, and model versioning" —
+            however, no MLflow code exists in any source file. There is no <code>import mlflow</code>, no experiment
+            tracking, no model registry, and no artifact logging.
+        </div>
+
+        <h2>3.4 Additional Issues</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Issue</th>
+                    <th>Location</th>
+                    <th>Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>visuals.py</code> crashes outside Jupyter</td>
+                    <td><code>visuals.py:8-9</code></td>
+                    <td>Cannot reuse visualizations in GUI</td>
+                </tr>
+                <tr>
+                    <td>No <code>requirements.txt</code> or <code>pyproject.toml</code></td>
+                    <td>Root directory</td>
+                    <td>No reproducible environment setup</td>
+                </tr>
+                <tr>
+                    <td>No unit tests</td>
+                    <td>Entire project</td>
+                    <td>No automated quality assurance</td>
+                </tr>
+                <tr>
+                    <td>No <code>.gitignore</code></td>
+                    <td>Root directory</td>
+                    <td><code>__pycache__</code>, <code>.venv</code> tracked in git</td>
+                </tr>
+                <tr>
+                    <td>Duplicate virtual environments</td>
+                    <td><code>.venv</code> and <code>.venv-1</code></td>
+                    <td>Wasted disk space, confusion</td>
+                </tr>
+                <tr>
+                    <td>Mixed-language comments (Arabic + English)</td>
+                    <td><code>data_utils.py</code>, <code>app_gui.py</code></td>
+                    <td>Reduced code readability for reviewers</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ── Section 4 ── -->
+        <h1 class="page-break">4. Proposed Improvement Roadmap</h1>
+
+        <p>The improvement plan is organized into 5 sequential phases, ordered by priority and dependency. Each phase
+            builds upon the previous one.</p>
+
+        <!-- Phase 1 -->
+        <div class="phase-card phase-1">
+            <div class="phase-header">
+                <div class="phase-number">1</div>
+                <div class="phase-title">Real Data Pipeline</div>
+                <div class="phase-est">~2 days</div>
+            </div>
+            <div class="phase-body">
+                <p><strong>Goal:</strong> Replace synthetic data generation with real <code>census.csv</code> loading
+                    and proper preprocessing.</p>
+                <ul>
+                    <li><span class="file-badge modify">MODIFY</span> <code>data_utils.py</code> — Add
+                        <code>load_census_data(filepath)</code> function using <code>pandas.read_csv()</code>
+                    </li>
+                    <li>Implement proper one-hot encoding for categorical features (or ordinal encoding for tree-based
+                        models)</li>
+                    <li>Add log-transform for skewed features (<code>capital-gain</code>, <code>capital-loss</code>)
+                    </li>
+                    <li>Implement train/test split with stratified sampling</li>
+                    <li>Keep <code>generate_synthetic_data()</code> as a fallback for demo mode</li>
+                    <li><span class="file-badge modify">MODIFY</span> <code>app_gui.py</code> — Wire up "Browse" button
+                        to actually load and validate CSV files</li>
+                    <li><span class="file-badge new">NEW</span> <code>requirements.txt</code> — Pin all dependencies for
+                        reproducibility</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="phase-card phase-2">
+            <div class="phase-header">
+                <div class="phase-number">2</div>
+                <div class="phase-title">Production-Grade ML Models</div>
+                <div class="phase-est">~3 days</div>
+            </div>
+            <div class="phase-body">
+                <p><strong>Goal:</strong> Replace simplified custom classifiers with scikit-learn implementations for
+                    production-quality accuracy.</p>
+                <ul>
+                    <li><span class="file-badge modify">MODIFY</span> <code>models.py</code> — Replace custom
+                        implementations with scikit-learn:</li>
+                    <li style="list-style: none; padding-left: 20px;">
+                        <code>SimpleRandomForest</code> → <code>sklearn.ensemble.RandomForestClassifier</code><br>
+                        <code>SimpleLogisticRegression</code> → <code>sklearn.linear_model.LogisticRegression</code><br>
+                        <code>SimpleGradientBoosting</code> → <code>sklearn.ensemble.GradientBoostingClassifier</code>
+                    </li>
+                    <li>Create a <code>ModelWrapper</code> class for unified API across all models</li>
+                    <li>Add <code>GridSearchCV</code> hyperparameter optimization for best model</li>
+                    <li>Add model serialization with <code>joblib.dump</code>/<code>joblib.load</code></li>
+                </ul>
+
+                <p><strong>Expected accuracy improvements:</strong></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Current (Synthetic)</th>
+                            <th>Expected (Real + sklearn)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Logistic Regression</td>
+                            <td>71.87%</td>
+                            <td>~82–84%</td>
+                        </tr>
+                        <tr>
+                            <td>Random Forest</td>
+                            <td>64.40%</td>
+                            <td>~84–86%</td>
+                        </tr>
+                        <tr>
+                            <td>Gradient Boosting</td>
+                            <td>72.01%</td>
+                            <td>~86–87%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="phase-card phase-3">
+            <div class="phase-header">
+                <div class="phase-number">3</div>
+                <div class="phase-title">MLflow Experiment Tracking</div>
+                <div class="phase-est">~2 days</div>
+            </div>
+            <div class="phase-body">
+                <p><strong>Goal:</strong> Implement the MLflow integration referenced in the README.</p>
+                <ul>
+                    <li><span class="file-badge new">NEW</span> <code>mlflow_utils.py</code> — Create
+                        <code>MLflowTracker</code> class for experiment lifecycle management
+                    </li>
+                    <li>Log hyperparameters, metrics (accuracy, F₀.₅, precision, recall), and confusion matrices</li>
+                    <li>Log feature importance plots as MLflow artifacts</li>
+                    <li>Register best models in MLflow Model Registry</li>
+                    <li>Provide local MLflow UI launcher (<code>mlflow ui --port 5000</code>)</li>
+                    <li><span class="file-badge modify">MODIFY</span> <code>app_gui.py</code> — Add "Track with MLflow"
+                        toggle and "Open MLflow UI" button</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div class="phase-card phase-4">
+            <div class="phase-header">
+                <div class="phase-number">4</div>
+                <div class="phase-title">GUI Modernization & Decomposition</div>
+                <div class="phase-est">~3 days</div>
+            </div>
+            <div class="phase-body">
+                <p><strong>Goal:</strong> Further decompose the monolithic 961-line GUI class into reusable components.
+                </p>
+                <ul>
+                    <li><span class="file-badge new">NEW</span> <code>gui/__init__.py</code> — Package initialization
+                    </li>
+                    <li><span class="file-badge new">NEW</span> <code>gui/panels/left_panel.py</code> — Dataset & model
+                        configuration panel</li>
+                    <li><span class="file-badge new">NEW</span> <code>gui/panels/center_panel.py</code> — Feature input
+                        panel</li>
+                    <li><span class="file-badge new">NEW</span> <code>gui/panels/right_panel.py</code> — Results &
+                        visualization panel</li>
+                    <li><span class="file-badge new">NEW</span> <code>gui/components/chart_widget.py</code> — Reusable
+                        chart component</li>
+                    <li>Add loading spinner/animation during model training</li>
+                    <li>Add export functionality (save predictions to CSV, export charts as PNG)</li>
+                    <li><span class="file-badge modify">MODIFY</span> <code>visuals.py</code> — Remove IPython
+                        dependency; make compatible with standalone Python</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div class="phase-card phase-5">
+            <div class="phase-header">
+                <div class="phase-number">5</div>
+                <div class="phase-title">Testing & Deployment</div>
+                <div class="phase-est">~2 days</div>
+            </div>
+            <div class="phase-body">
+                <p><strong>Goal:</strong> Add automated testing, CI configuration, and project packaging.</p>
+                <ul>
+                    <li><span class="file-badge new">NEW</span> <code>tests/test_data_utils.py</code> — Data loading,
+                        preprocessing, and metrics tests</li>
+                    <li><span class="file-badge new">NEW</span> <code>tests/test_models.py</code> — Model
+                        training/prediction tests with small datasets</li>
+                    <li><span class="file-badge new">NEW</span> <code>.gitignore</code> — Exclude
+                        <code>__pycache__</code>, <code>.venv</code>, <code>mlruns/</code>
+                    </li>
+                    <li><span class="file-badge new">NEW</span> <code>pyproject.toml</code> — Package configuration with
+                        pip-installable entry point</li>
+                    <li>Translate Arabic comments to English for international accessibility</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ── Section 5 ── -->
+        <h1 class="page-break">5. Risk Assessment</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Risk</th>
+                    <th>Likelihood</th>
+                    <th>Impact</th>
+                    <th>Mitigation Strategy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>scikit-learn version incompatibility</td>
+                    <td>Low</td>
+                    <td>Medium</td>
+                    <td>Pin exact versions in <code>requirements.txt</code></td>
+                </tr>
+                <tr>
+                    <td>MLflow server resource usage</td>
+                    <td>Medium</td>
+                    <td>Low</td>
+                    <td>Use local file-based tracking (no remote server)</td>
+                </tr>
+                <tr>
+                    <td>GUI font unavailability on target systems</td>
+                    <td>Medium</td>
+                    <td>Low</td>
+                    <td>Add fallback font stacks in style configuration</td>
+                </tr>
+                <tr>
+                    <td>census.csv format changes or corruption</td>
+                    <td>Low</td>
+                    <td>Medium</td>
+                    <td>Add schema validation in data loader with clear error messages</td>
+                </tr>
+                <tr>
+                    <td>Training time increase with real sklearn models</td>
+                    <td>Low</td>
+                    <td>Medium</td>
+                    <td>Keep threaded training; add progress callbacks and timeout handling</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ── Section 6 ── -->
+        <h1>6. Verification Plan</h1>
+
+        <h2>6.1 Automated Tests</h2>
+
+        <pre><code># Run full test suite
+python -m pytest tests/ -v
+
+# Verify data pipeline loads real census data
+python -c "from data_utils import load_census_data; X, y = load_census_data('census.csv'); print(f'Loaded: {X.shape}')"
+
+# Verify model wrapper API
+python -c "from models import ModelWrapper; m = ModelWrapper('Gradient Boosting'); print('OK')"</code></pre>
+
+        <h2>6.2 Manual Verification</h2>
+
+        <ul>
+            <li>Launch GUI (<code>python finding_donors_gui.py</code>) and verify:
+                <ul>
+                    <li>"Browse" loads real CSV and displays correct dataset statistics</li>
+                    <li>All 3 models train successfully with higher accuracy than current baselines</li>
+                    <li>Prediction results match expected patterns (high education + capital-gain → likely donor)</li>
+                    <li>Feature importance charts render correctly for all three models</li>
+                    <li>MLflow UI accessible at <code>http://localhost:5000</code> (Phase 3)</li>
+                </ul>
+            </li>
+            <li>Verify Jupyter notebook <code>finding_donors.ipynb</code> still runs end-to-end without errors</li>
+        </ul>
+
+        <!-- ── Section 7 ── -->
+        <h1>7. Deliverables Summary</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Deliverable</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Real data pipeline (<code>census.csv</code> loading & preprocessing)</td>
+                    <td>Code Change</td>
+                    <td><span class="priority high">High</span></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>scikit-learn model integration with unified wrapper</td>
+                    <td>Code Change</td>
+                    <td><span class="priority high">High</span></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>MLflow experiment tracking & model registry</td>
+                    <td>New Feature</td>
+                    <td><span class="priority medium">Medium</span></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>GUI decomposition into reusable panel submodules</td>
+                    <td>Refactor</td>
+                    <td><span class="priority medium">Medium</span></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Unit test suite (data utils + models)</td>
+                    <td>New</td>
+                    <td><span class="priority medium">Medium</span></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td><code>requirements.txt</code> / <code>pyproject.toml</code></td>
+                    <td>New</td>
+                    <td><span class="priority low">Low</span></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td><code>.gitignore</code> cleanup & environment consolidation</td>
+                    <td>New</td>
+                    <td><span class="priority low">Low</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="highlight-box" style="margin-top: 30px;">
+            <strong>Total Estimated Effort:</strong> ~12 working days across 5 phases.<br>
+            Phases are designed to be incremental — each phase delivers standalone value and the project remains
+            functional after each phase is completed.
+        </div>
+
+
+
+    </div>
+
+    <div class="page-footer">
+        CharityML — Finding Donors Predictor · Technical Proposal · April 2026
+    </div>
+
+</body>
+
+</html>
